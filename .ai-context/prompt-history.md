@@ -22,6 +22,7 @@
 | 2026-03-28 11:33 | 3 | Authentication Module | ✅ | Implemented JWT flow with cookie-based storage (environment-aware). |
 | 2026-03-28 11:51 | 4 | User Profile Module | ✅ | Profile retrieval and update implemented; Build/Lint passed. |
 | 2026-03-28 11:55 | 5 | Spotify Integration Module | ✅ | SpotifyClient, Search, and Music Service implemented; Build/Lint passed. |
+| 2026-03-28 12:00 | 6 | Room Module (REST API) | ✅ | Room creation, joining, and management REST API implemented; Build/Lint passed. |
 | | | | | |
 
 ---
