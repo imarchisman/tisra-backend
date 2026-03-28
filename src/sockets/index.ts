@@ -7,20 +7,27 @@ import { registerChatHandlers } from './chat-handler';
 import { logger } from '../utils/logger';
 import { env } from '../config/env';
 
-export const initializeSocketIO = (httpServer: HttpServer) => {
-  const io = new Server<ClientToServerEvents, ServerToClientEvents, any, SocketData>(httpServer, {
+export const initializeSocketIO = (
+  httpServer: HttpServer
+): Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData> => {
+  const io = new Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    Record<string, never>,
+    SocketData
+  >(httpServer, {
     cors: {
       origin: env.corsOrigin,
       methods: ['GET', 'POST'],
-      credentials: true
-    }
+      credentials: true,
+    },
   });
 
   // Apply Auth Middleware
   io.use(socketAuthMiddleware);
 
   io.on('connection', (socket) => {
-    const user = (socket as any).user;
+    const user = socket.data.user!;
     logger.info(`New socket connection: ${socket.id} (User: ${user.username})`);
 
     // Register handlers

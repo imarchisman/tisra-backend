@@ -19,12 +19,14 @@ describe('Room Module', () => {
   let hostToken: string;
   let joinerToken: string;
 
-  beforeEach(async () => {
+  beforeEach(async (): Promise<void> => {
     const hostRes = await request(app).post('/api/v1/auth/register').send(hostUser);
-    hostToken = hostRes.body.data?.tokens?.accessToken || '';
+    expect(hostRes.status).toBe(201);
+    hostToken = hostRes.body.data.tokens.accessToken;
 
     const joinerRes = await request(app).post('/api/v1/auth/register').send(joinerUser);
-    joinerToken = joinerRes.body.data?.tokens?.accessToken || '';
+    expect(joinerRes.status).toBe(201);
+    joinerToken = joinerRes.body.data.tokens.accessToken;
   });
 
   describe('Room Lifecycle', () => {

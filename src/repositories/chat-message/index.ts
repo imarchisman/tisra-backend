@@ -1,12 +1,12 @@
 import { prisma } from '../../config/database';
-import { ChatMessage } from '@prisma/client';
+import { ChatMessageWithSender } from '../../types/chat.types';
 
 export class ChatMessageRepository {
   static async create(data: {
     roomId: string;
     senderId: string;
     content: string;
-  }): Promise<ChatMessage> {
+  }): Promise<ChatMessageWithSender> {
     return prisma.chatMessage.create({
       data,
       include: {
@@ -16,10 +16,10 @@ export class ChatMessageRepository {
           },
         },
       },
-    });
+    }) as Promise<ChatMessageWithSender>;
   }
 
-  static async findByRoomId(roomId: string, limit: number = 50): Promise<any[]> {
+  static async findByRoomId(roomId: string, limit: number = 50): Promise<ChatMessageWithSender[]> {
     return prisma.chatMessage.findMany({
       where: { roomId },
       orderBy: { createdAt: 'desc' },
@@ -31,6 +31,6 @@ export class ChatMessageRepository {
           },
         },
       },
-    });
+    }) as Promise<ChatMessageWithSender[]>;
   }
 }

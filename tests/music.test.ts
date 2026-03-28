@@ -12,7 +12,10 @@ describe('Music Module (Spotify Integration)', () => {
   let accessToken: string;
 
   beforeEach(async () => {
-    const uniqueTestUser = { ...testUser, email: `test-${Date.now()}-${Math.random()}@example.com` };
+    const uniqueTestUser = {
+      ...testUser,
+      email: `test-${Date.now()}-${Math.random()}@example.com`,
+    };
     const regRes = await request(app).post('/api/v1/auth/register').send(uniqueTestUser);
     accessToken = regRes.body.data?.tokens?.accessToken || '';
   });
@@ -49,8 +52,8 @@ describe('Music Module (Spotify Integration)', () => {
         .get('/api/v1/music/search')
         .query({ q: 'Rick Astley' })
         .set('Authorization', `Bearer ${accessToken}`);
-      
-      const trackId = searchRes.body.data[0]?.id || '4cOdK90v63v386SthpYpQC'; 
+
+      const trackId = searchRes.body.data[0]?.id || '4cOdK90v63v386SthpYpQC';
 
       const res = await request(app)
         .get(`/api/v1/music/track/${trackId}`)

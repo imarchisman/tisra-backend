@@ -20,7 +20,7 @@ export class RoomController {
   static async join(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const { code } = req.body as JoinRoomInput;
-      const result = await RoomService.joinRoom(req.user!.id, code);
+      const result = await RoomService.joinRoom(code, req.user!.id);
       res.status(200).json({
         success: true,
         message: 'Joined room successfully',

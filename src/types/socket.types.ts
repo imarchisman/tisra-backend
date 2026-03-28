@@ -34,7 +34,7 @@ export interface ServerToClientEvents {
   }) => void;
   'playback:update': (state: RoomStateUpdate) => void;
   'app:error': (error: { message: string; code?: string }) => void;
-  'error': (error: { message: string; code?: string }) => void;
+  error: (error: { message: string; code?: string }) => void;
 }
 
 export interface ClientToServerEvents {

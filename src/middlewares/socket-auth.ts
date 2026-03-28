@@ -3,9 +3,10 @@ import { ExtendedError } from 'socket.io/dist/namespace';
 import { AuthHelper } from '../services/auth/helper';
 import { UnauthorizedError } from '../errors';
 import cookie from 'cookie';
+import { SocketData } from '../types/socket.types';
 
 export const socketAuthMiddleware = (
-  socket: Socket,
+  socket: Socket<any, any, any, SocketData>,
   next: (err?: ExtendedError) => void
 ): void => {
   try {
@@ -15,8 +16,8 @@ export const socketAuthMiddleware = (
     const authHeader = socket.handshake.auth?.token || socket.handshake.headers.authorization;
     if (authHeader?.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
-    } 
-    
+    }
+
     // 2. Try to get token from cookies
     if (!token && socket.handshake.headers.cookie) {
       const cookies = cookie.parse(socket.handshake.headers.cookie);
@@ -29,8 +30,8 @@ export const socketAuthMiddleware = (
 
     const payload = AuthHelper.verifyAccessToken(token);
 
-    // Attach user to socket data
-    (socket as any).user = {
+    // Attach user to socket data using standard socket.data
+    socket.data.user = {
       id: payload.id,
       email: payload.email,
       username: payload.username,

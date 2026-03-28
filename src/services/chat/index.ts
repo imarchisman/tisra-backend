@@ -1,13 +1,14 @@
 import { ChatMessageRepository } from '../../repositories/chat-message';
 import { RoomRepository } from '../../repositories/room';
 import { NotFoundError } from '../../errors';
+import { ChatMessageWithSender } from '../../types/chat.types';
 
 export class ChatService {
   static async sendMessage(data: {
     roomCode: string;
     userId: string;
     content: string;
-  }) {
+  }): Promise<ChatMessageWithSender> {
     const room = await RoomRepository.findByCode(data.roomCode);
     if (!room) throw new NotFoundError('Room not found');
 
@@ -20,7 +21,7 @@ export class ChatService {
     return message;
   }
 
-  static async getHistory(roomCode: string) {
+  static async getHistory(roomCode: string): Promise<ChatMessageWithSender[]> {
     const room = await RoomRepository.findByCode(roomCode);
     if (!room) throw new NotFoundError('Room not found');
 

@@ -1,25 +1,21 @@
 import { prisma } from '../src/config/database';
 
 export const clearDatabase = async (): Promise<void> => {
+  const tables = ['room_participants', 'playlist_tracks', 'playlists', 'chat_messages', 'rooms', 'users'];
   try {
-    const tablenames = await prisma.$queryRaw<
-      Array<{ tablename: string }>
-    >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
-
-    for (const { tablename } of tablenames) {
-      if (tablename !== '_prisma_migrations') {
-        await prisma.$executeRawUnsafe(`TRUNCATE TABLE "public"."${tablename}" CASCADE;`);
-      }
+    for (const table of tables) {
+      await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${table}" CASCADE;`);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error clearing database:', error);
   }
 };
 
-beforeEach(async () => {
+beforeEach(async (): Promise<void> => {
   await clearDatabase();
 });
 
-afterAll(async () => {
+afterAll(async (): Promise<void> => {
   await prisma.$disconnect();
 });

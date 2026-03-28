@@ -11,9 +11,7 @@ describe('Authentication Module', () => {
 
   describe('POST /api/v1/auth/register', () => {
     it('should register a new user successfully', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/register')
-        .send(testUser);
+      const res = await request(app).post('/api/v1/auth/register').send(testUser);
 
       expect(res.status).toBe(201);
       expect(res.body.success).toBe(true);
@@ -30,9 +28,7 @@ describe('Authentication Module', () => {
     });
 
     it('should fail with invalid data', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/register')
-        .send({ email: 'invalid' });
+      const res = await request(app).post('/api/v1/auth/register').send({ email: 'invalid' });
 
       expect(res.status).toBe(422);
     });
@@ -44,12 +40,10 @@ describe('Authentication Module', () => {
     });
 
     it('should login successfully and set cookies', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/login')
-        .send({
-          email: testUser.email,
-          password: testUser.password,
-        });
+      const res = await request(app).post('/api/v1/auth/login').send({
+        email: testUser.email,
+        password: testUser.password,
+      });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -57,12 +51,10 @@ describe('Authentication Module', () => {
     });
 
     it('should fail with wrong password', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/login')
-        .send({
-          email: testUser.email,
-          password: 'wrongpassword',
-        });
+      const res = await request(app).post('/api/v1/auth/login').send({
+        email: testUser.email,
+        password: 'wrongpassword',
+      });
 
       expect(res.status).toBe(401);
     });
@@ -76,7 +68,9 @@ describe('Authentication Module', () => {
         .send({ email: testUser.email, password: testUser.password });
 
       const cookies = loginRes.header['set-cookie'] as unknown as string[];
-      const refreshTokenCookie = cookies.find((c: string) => c.startsWith('refreshToken'))?.split(';')[0];
+      const refreshTokenCookie = cookies
+        .find((c: string) => c.startsWith('refreshToken'))
+        ?.split(';')[0];
 
       const res = await request(app)
         .post('/api/v1/auth/refresh')
@@ -92,7 +86,7 @@ describe('Authentication Module', () => {
       const res = await request(app).post('/api/v1/auth/logout');
       expect(res.status).toBe(200);
       expect(res.header['set-cookie']).toBeDefined();
-      
+
       const cookies = res.header['set-cookie'] as unknown as string[];
       expect(cookies.some((c: string) => c.includes('accessToken=;'))).toBe(true);
     });
