@@ -57,4 +57,6 @@ app.use((_req, res) => {
 // Error Handler (must be last)
 app.use(errorHandler);
 
+//exporting the app
+
 export { app };
