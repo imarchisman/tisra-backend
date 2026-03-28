@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlaybackState {
+  PLAYING
+  PAUSED
+  STOPPED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  displayName  String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  hostedRooms      Room[]            @relation("RoomHost")
+  roomParticipants RoomParticipant[]
+  chatMessages     ChatMessage[]
+  playlists        Playlist[]
+
+  @@map("users")
+}
+
+model Room {
+  id               String        @id @default(uuid())
+  code             String        @unique // 6-char alphanumeric
+  name             String
+  hostId           String
+  maxParticipants  Int           @default(10)
+  isActive         Boolean       @default(true)
+  currentTrackId   String? // Spotify track ID
+  playbackState    PlaybackState @default(STOPPED)
+  playbackPosition Int           @default(0) // in milliseconds
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  host         User              @relation("RoomHost", fields: [hostId], references: [id])
+  participants RoomParticipant[]
+  chatMessages ChatMessage[]
+
+  @@map("rooms")
+}
+
+model RoomParticipant {
+  id       String   @id @default(uuid())
+  roomId   String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  // Relations
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@map("room_participants")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  roomId    String
+  senderId  String
+  content   String // max 500 chars (enforced in code)
+  createdAt DateTime @default(now())
+
+  // Relations
+  room   Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model Playlist {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracks PlaylistTrack[]
+
+  @@map("playlists")
+}
+
+model PlaylistTrack {
+  id             String   @id @default(uuid())
+  playlistId     String
+  spotifyTrackId String
+  trackName      String
+  artistName     String
+  albumArt       String?
+  durationMs     Int
+  addedAt        DateTime @default(now())
+
+  // Relations
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, spotifyTrackId])
+  @@map("playlist_tracks")
+}
