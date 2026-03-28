@@ -1,4 +1,4 @@
-import { PrismaClient, Room } from '@prisma/client';
+import { PrismaClient, Room, Prisma } from '@prisma/client';
 import { prisma } from '../../config/database';
 import { CreateRoomInput, RoomWithParticipants } from '../../types/room.types';
 
@@ -47,7 +47,7 @@ export class RoomRepository {
     }) as Promise<RoomWithParticipants | null>;
   }
 
-  static async update(id: string, data: Partial<Room>): Promise<Room> {
+  static async update(id: string, data: Prisma.RoomUpdateInput): Promise<Room> {
     return this.client.room.update({
       where: { id },
       data,

@@ -3,6 +3,7 @@ import { RoomParticipantRepository } from '../../repositories/room-participant';
 import { CreateRoomInput, RoomDetails, RoomParticipantDetails } from '../../types/room.types';
 import { generateRoomCode } from './helper';
 import { NotFoundError, ForbiddenError, ConflictError } from '../../errors';
+import { PlaybackState } from '@prisma/client';
 
 export class RoomService {
   static async createRoom(userId: string, data: CreateRoomInput): Promise<RoomDetails> {
@@ -19,8 +20,8 @@ export class RoomService {
     return this.getRoomDetails(code);
   }
 
-  static async joinRoom(userId: string, code: string): Promise<RoomDetails> {
-    const room = await RoomRepository.findByCode(code);
+  static async joinRoom(roomCode: string, userId: string): Promise<RoomDetails> {
+    const room = await RoomRepository.findByCode(roomCode);
     if (!room) throw new NotFoundError('Room');
     if (!room.isActive) throw new ConflictError('Room is no longer active');
 
@@ -34,18 +35,18 @@ export class RoomService {
       await RoomParticipantRepository.add(room.id, userId);
     }
 
-    return this.getRoomDetails(code);
+    return this.getRoomDetails(roomCode);
   }
 
-  static async leaveRoom(userId: string, roomId: string): Promise<void> {
-    const room = await RoomRepository.findById(roomId);
+  static async leaveRoom(roomCode: string, userId: string): Promise<void> {
+    const room = await RoomRepository.findByCode(roomCode);
     if (!room) throw new NotFoundError('Room');
 
     if (room.hostId === userId) {
-      await RoomRepository.deactivate(roomId);
+      await RoomRepository.deactivate(room.id);
     }
 
-    await RoomParticipantRepository.remove(roomId, userId);
+    await RoomParticipantRepository.remove(room.id, userId);
   }
 
   static async kickUser(hostId: string, roomId: string, targetUserId: string): Promise<void> {
@@ -63,6 +64,22 @@ export class RoomService {
     if (room.hostId !== hostId) throw new ForbiddenError('Only the host can close the room');
 
     await RoomRepository.deactivate(roomId);
+  }
+
+  static async updatePlayback(
+    userId: string,
+    roomCode: string,
+    data: { isPlaying: boolean; currentTrackId?: string | null; positionMs?: number }
+  ) {
+    const room = await RoomRepository.findByCode(roomCode);
+    if (!room) throw new NotFoundError('Room');
+    if (room.hostId !== userId) throw new ForbiddenError('Only the host can control playback');
+
+    return RoomRepository.update(room.id, {
+      playbackState: data.isPlaying ? PlaybackState.PLAYING : PlaybackState.PAUSED,
+      currentTrackId: data.currentTrackId !== undefined ? data.currentTrackId : undefined,
+      playbackPosition: data.positionMs !== undefined ? data.positionMs : undefined,
+    });
   }
 
   static async getRoomDetails(code: string): Promise<RoomDetails> {
